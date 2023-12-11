@@ -10,7 +10,7 @@ import {
     logOutSuccess,
     logOutFailed,
 } from '../authSlice'
-import { apiURL } from '../../Var'
+import { apiURL } from '../../globalVar'
 
 export const loginUser = async (user, dispatch, navigate) => {
     dispatch(loginStart())

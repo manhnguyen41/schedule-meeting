@@ -1,7 +1,7 @@
 import HomeIcon from '@mui/icons-material/Home'
 import React, { Component }  from 'react';
 import NavBar from '../components/NavBar.jsx'
-import { pages } from '../Var.js';
+import { pages } from '../globalVar.js';
 
 function Dashboard() {
     return (
