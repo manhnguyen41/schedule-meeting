@@ -3,8 +3,9 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import {Link, useNavigate} from 'react-router-dom'
 import {useState, useEffect} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
-// import {logOut} from '../redux/apiRequest/loginApi'
+import {logOut} from '../redux/apiRequest/loginApi'
 import {createAxios} from '../createInstance'
+import { getUser } from '../redux/apiRequest/userApi';
 // import Popup from './Popup'
 // import {settingUser} from '../redux/apiRequest/userApi'
 // import UsersForm from '../pages/User/UsersForm'
@@ -12,21 +13,23 @@ import {createAxios} from '../createInstance'
 function NavBar(props) {
   const [value, setValue] = useState(props.value)
   const [recordForEdit, setRecordForEdit] = useState(null)
+  const [user, setUser] = useState(null)
   const [openPopup, setOpenPopup] = useState(false)
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const user = useSelector(state => state.auth.login.currentUser)
-  let axiosJWT = createAxios(user, dispatch, navigate)
+  const currentUserId = useSelector(state => state.auth.login.currentUserId)
+  let axiosJWT = createAxios(currentUserId, dispatch, navigate)
+  useEffect(async () => {
+    const user = await getUser(currentUserId?.token, dispatch, axiosJWT, currentUserId?.userId)
+    setUser(user)
+  }, [])
 
-//   const handleLogOut = async () => {
-//     await logOut(
-//       dispatch,
-//       navigate,
-//       user?.token,
-//       user?.refreshToken,
-//       axiosJWT,
-//     )
-//   }
+  const handleLogOut = () => {
+    logOut(
+      dispatch,
+      navigate,
+    )
+  }
 
 //   const edit = async (item, resetForm) => {
 //     const resMsg = await settingUser(
@@ -63,7 +66,7 @@ function NavBar(props) {
             sx={{marginLeft: '10px'}}
             textColor="inherit"
             >
-            {user?.token ? (
+            {currentUserId?.token ? (
               props.pages.map(({page, path}, index) => (
                 <Tab key={index} label={page} component={Link} to={path} />
               ))
@@ -71,24 +74,24 @@ function NavBar(props) {
               <Tab key={0} label={'Dashboard'} component={Link} to={'/dashboard'} />
             )}
           </Tabs>
-          {user?.token ? (
+          {currentUserId?.token ? (
             <>
               <Button
                 sx={{marginLeft: 'auto'}}
                 variant="contained"
-                onClick={() => {}}>
+                onClick={() => navigate('/meeting/organize/groups')}>
                 Create
               </Button>
               <Button
                 sx={{marginLeft: '10px'}}
                 variant="contained"
-                onClick={() => {}}>
-                Hi, User
+                onClick={() => navigate(`/settings`)}>
+                Hi, {user?.username}
               </Button>
               <Button
                 sx={{marginLeft: '10px'}}
                 variant="contained"
-                onClick={() => {}}>
+                onClick={() => {handleLogOut()}}>
                 Logout
               </Button>
             </>

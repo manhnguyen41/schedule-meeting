@@ -11,7 +11,7 @@ export const createAxios = (user, dispatch, navigate) => {
   newInstance.interceptors.request.use(
     async config => {
       let date = new Date()
-      const decodedToken = jwt_decode(user?.accessToken)
+      const decodedToken = jwt_decode(user?.token)
       if (decodedToken.exp < date.getTime() / 1000) {
         dispatch(loginFailed())
         navigate("/login")

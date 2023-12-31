@@ -100,7 +100,7 @@ export default function Login() {
                                 <Link
                                     href="#"
                                     variant="body2"
-                                    onClick={() => {navigate("/login")}}>
+                                    onClick={() => {navigate("/register")}}>
                                     {"Don't have an account? Sign Up"}
                                 </Link>
                             </Grid>

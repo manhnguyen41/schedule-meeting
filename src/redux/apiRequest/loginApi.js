@@ -38,29 +38,15 @@ export const loginUser = async (user, dispatch, navigate) => {
 //     }
 // }
 
-// export const logOut = async (
-//     dispatch,
-//     navigate,
-//     accessToken,
-//     refreshToken,
-//     axiosJWT,
-// ) => {
-//     dispatch(logOutStart())
-//     try {
-//         const res = await axiosJWT.post(
-//             `http://localhost:8000/logout`,
-//             {
-//                 refreshToken: refreshToken,
-//             },
-//             {
-//                 headers: {
-//                     token: `Bearer ${accessToken}`,
-//                 },
-//             },
-//         )
-//         dispatch(logOutSuccess())
-//         navigate('/admin/login')
-//     } catch (error) {
-//         dispatch(logOutFailed())
-//     }
-// }
+export const logOut = (
+    dispatch,
+    navigate,
+) => {
+    dispatch(logOutStart())
+    try {
+        dispatch(logOutSuccess())
+        navigate('/login')
+    } catch (error) {
+        dispatch(logOutFailed())
+    }
+}
