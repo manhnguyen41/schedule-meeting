@@ -13,7 +13,7 @@ import StarIcon from '@mui/icons-material/Star'
 import DoneIcon from '@mui/icons-material/Done'
 
 const options = {
-  Yes: {
+  yes: {
     color: '#e8fcec',
     icon: (
       <DoneIcon
@@ -28,7 +28,7 @@ const options = {
       />
     ),
   },
-  'If need be': {
+  'if need be': {
     color: '#fff1a8',
     icon: (
       <DoneIcon
@@ -42,7 +42,7 @@ const options = {
       />
     ),
   },
-  No: {
+  no: {
     color: '#ffffff',
     icon: (
       <DoneIcon
@@ -74,49 +74,40 @@ function TableVoteHeaderCell(props) {
           color: '#aeaeae',
         }}
         size="small">
-        <Button
+        <Stack
           id={column.id}
-          onClick={handleChoiceChange}
-          fullWidth
-          sx={{
-            backgroundColor: options[choice[column.id]]?.color,
-            color: '#000000',
-          }}>
-          <Stack
+          direction="column"
+          spacing={0}
+          sx={{mt: '8px', alignItems: 'center', color: '#aeaeae'}}>
+          <Typography
             id={column.id}
-            direction="column"
-            spacing={0}
-            sx={{mt: '8px', alignItems: 'center'}}>
-            <Typography
-              id={column.id}
-              sx={{fontSize: 14, textTransform: 'uppercase'}}>
-              {column.startTime.format('MMM')}
-            </Typography>
-            <Typography id={column.id} sx={{fontSize: 25, fontWeight: 'bold'}}>
-              {column.startTime.format('D')}
-            </Typography>
-            <Typography
-              id={column.id}
-              sx={{fontSize: 14, textTransform: 'uppercase'}}>
-              {column.startTime.format('ddd')}
-            </Typography>
-            <Typography
-              id={column.id}
-              sx={{fontSize: 14, mt: '16px'}}>{`${column.startTime.format(
-              'h',
-            )}:${column.startTime.format('mm')} ${column.startTime.format(
-              'A',
-            )}`}</Typography>
-            <Typography
-              id={column.id}
-              sx={{fontSize: 14}}>{`${column.endTime.format(
-              'h',
-            )}:${column.endTime.format('mm')} ${column.endTime.format(
-              'A',
-            )}`}</Typography>
-            {options[choice[column.id]]?.icon}
-          </Stack>
-        </Button>
+            sx={{fontSize: 14, textTransform: 'uppercase'}}>
+            {column.startTime.format('MMM')}
+          </Typography>
+          <Typography id={column.id} sx={{fontSize: 25, fontWeight: 'bold'}}>
+            {column.startTime.format('D')}
+          </Typography>
+          <Typography
+            id={column.id}
+            sx={{fontSize: 14, textTransform: 'uppercase'}}>
+            {column.startTime.format('ddd')}
+          </Typography>
+          <Typography
+            id={column.id}
+            sx={{fontSize: 14, mt: '16px'}}>{`${column.startTime.format(
+            'h',
+          )}:${column.startTime.format('mm')} ${column.startTime.format(
+            'A',
+          )}`}</Typography>
+          <Typography
+            id={column.id}
+            sx={{fontSize: 14}}>{`${column.endTime.format(
+            'h',
+          )}:${column.endTime.format('mm')} ${column.endTime.format(
+            'A',
+          )}`}</Typography>
+          {options[choice[column.id]]?.icon}
+        </Stack>
       </TableCell>
     )
   } else {

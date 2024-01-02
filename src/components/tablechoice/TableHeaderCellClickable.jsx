@@ -119,7 +119,7 @@ function TableHeaderCellClickable(props) {
               spacing={0.5}>
               <PeopleIcon id={column.id} sx={{fontSize: 18}} />
               <Typography id={column.id} sx={{fontSize: 14}}>
-                {column.numOfChoice}
+                {Math.round(column.numOfChoice)}
               </Typography>
             </Stack>
           </Stack>

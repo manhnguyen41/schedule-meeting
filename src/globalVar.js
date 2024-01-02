@@ -4,4 +4,4 @@ export const pages = [
     // {page: 'Users', path: '/admin/users'},
   ];
   
-  export const apiURL = 'http://localhost:8000/api'
+  export const apiURL = 'http://localhost:8000'

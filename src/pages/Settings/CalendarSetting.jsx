@@ -19,6 +19,7 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  Container,
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import MeetingDashBoard from '../../components/MeetingDashBoard.jsx'
@@ -48,22 +49,24 @@ function CalendarSetting() {
   return (
     <>
       <NavBar pages={pages} value={1} />
-      <Grid container spacing={2} sx={{padding: '100px'}}>
-        <Grid item xs={4} md={4}>
-          <SettingMenu selectedIndex={2} />
+      <Container sx={{mt: '100px', pl: '5%', pr: '5%'}}>
+        <Grid container spacing={2}>
+          <Grid item xs={4} md={4}>
+            <SettingMenu selectedIndex={2} />
+          </Grid>
+          <Grid item xs={8} md={8}>
+            <Card variant="outlined">
+              <Typography
+                sx={{
+                  p: '24px',
+                  fontSize: 40,
+                }}>
+                Comming soon ...
+              </Typography>
+            </Card>
+          </Grid>
         </Grid>
-        <Grid item xs={8} md={8}>
-          <Card variant="outlined">
-            <Typography
-              sx={{
-                p: '24px',
-                fontSize: 40,
-              }}>
-              Comming soon ...
-            </Typography>
-          </Card>
-        </Grid>
-      </Grid>
+      </Container>
     </>
   )
 }

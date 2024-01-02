@@ -20,7 +20,7 @@ function NavBar(props) {
   const currentUserId = useSelector(state => state.auth.login.currentUserId)
   let axiosJWT = createAxios(currentUserId, dispatch, navigate)
   useEffect(async () => {
-    const user = await getUser(currentUserId?.token, dispatch, axiosJWT, currentUserId?.userId)
+    const user = await getUser(currentUserId?.token, dispatch, navigate, axiosJWT, currentUserId?.userId)
     setUser(user)
   }, [])
 
@@ -77,19 +77,19 @@ function NavBar(props) {
           {currentUserId?.token ? (
             <>
               <Button
-                sx={{marginLeft: 'auto'}}
+                sx={{marginLeft: 'auto', textTransform: 'none'}}
                 variant="contained"
                 onClick={() => navigate('/meeting/organize/groups')}>
                 Create
               </Button>
               <Button
-                sx={{marginLeft: '10px'}}
+                sx={{marginLeft: '10px', textTransform: 'none'}}
                 variant="contained"
                 onClick={() => navigate(`/settings`)}>
                 Hi, {user?.username}
               </Button>
               <Button
-                sx={{marginLeft: '10px'}}
+                sx={{marginLeft: '10px', textTransform: 'none'}}
                 variant="contained"
                 onClick={() => {handleLogOut()}}>
                 Logout
@@ -98,7 +98,7 @@ function NavBar(props) {
           ) : (
             <>
               <Button
-                sx={{marginLeft: 'auto'}}
+                sx={{marginLeft: 'auto', textTransform: 'none'}}
                 variant="contained"
                 onClick={() => navigate(`/login`)}>
                 Login

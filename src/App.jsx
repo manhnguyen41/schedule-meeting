@@ -10,6 +10,7 @@ import SignUp from './pages/Login/SignUp.jsx'
 import MeetingCreate from './pages/meeting/MeetingCreate.jsx'
 import Meeting from './pages/meeting/Meeting.jsx'
 import MeetingVote from './pages/meeting/MeetingVote.jsx'
+import MeetingPreview from './pages/meeting/MeetingPreview.jsx'
 
 function App() {
   return (
@@ -23,9 +24,11 @@ function App() {
           <Route path="settings" element={<Settings />} />
           <Route path="settings/profile" element={<ProfileSetting />} />
           <Route path="settings/calendar" element={<CalendarSetting />} />
-          <Route path="meeting/organize/groups" element={<MeetingCreate />} />
-          <Route path="meeting/organize/id" element={<Meeting />} />
-          <Route path="meeting/organize/id/vote" element={<MeetingVote />} />
+          <Route path="meeting/organize/groups" element={<MeetingCreate isEdit={false}/>} />
+          <Route path="meeting/organize/id/:meetingId/edit" element={<MeetingCreate isEdit={true}/>} />
+          <Route path="meeting/organize/id/:meetingId" element={<Meeting />} />
+          <Route path="meeting/organize/id/:meetingId/vote" element={<MeetingVote />} />
+          <Route path="meeting/organize/id/:meetingId/preview" element={<MeetingPreview/>} />
         </Route>
       </Routes>
     </div>

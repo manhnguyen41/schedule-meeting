@@ -19,6 +19,7 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  Container,
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import MeetingDashBoard from '../../components/MeetingDashBoard.jsx'
@@ -48,54 +49,58 @@ function Settings() {
   return (
     <>
       <NavBar pages={pages} value={1} />
-      <Grid container spacing={2} sx={{padding: '100px'}}>
-        <Grid item xs={4} md={4}>
-          <SettingMenu selectedIndex={0} />
-        </Grid>
-        <Grid item xs={8} md={8}>
-          <Card variant="outlined">
-            <Typography
-              sx={{
-                pt: '16px',
-                pb: '24px',
-                pl: '24px',
-                pr: '16px',
-                fontSize: 22,
-              }}>
-              Overview
-            </Typography>
-            <Grid
-              container
-              spacing={3}
-              sx={{pl: '24px', pr: '24px', pb: '40px', gridAutoRows: '1fr'}}>
-              <Grid item xs={4} md={4}>
-                <SettingCard
-                  icon={
-                    <AccountBoxIcon
-                      sx={{alignContent: 'center', fontSize: 70}}
-                    />
-                  }
-                  title={'Profile'}
-                  subTitle={'Manage your profile and preferences'}
-                  url={`profile`}
-                />
+      <Container sx={{mt: '100px', pl: '5%', pr: '5%'}}>
+        <Grid container spacing={2}>
+          <Grid item xs={4} md={4}>
+            <SettingMenu selectedIndex={0} />
+          </Grid>
+          <Grid item xs={8} md={8}>
+            <Card variant="outlined">
+              <Typography
+                sx={{
+                  pt: '16px',
+                  pb: '24px',
+                  pl: '24px',
+                  pr: '16px',
+                  fontSize: 22,
+                }}>
+                Overview
+              </Typography>
+              <Grid
+                container
+                spacing={3}
+                sx={{pl: '24px', pr: '24px', pb: '40px', gridAutoRows: '1fr'}}>
+                <Grid item xs={4} md={4}>
+                  <SettingCard
+                    icon={
+                      <AccountBoxIcon
+                        sx={{alignContent: 'center', fontSize: 70}}
+                      />
+                    }
+                    title={'Profile'}
+                    subTitle={'Manage your profile and preferences'}
+                    url={`profile`}
+                  />
+                </Grid>
+                <Grid item xs={4} md={4}>
+                  <SettingCard
+                    icon={
+                      <CalendarMonthIcon
+                        sx={{alignContent: 'center', fontSize: 70}}
+                      />
+                    }
+                    title={'Connected calendars'}
+                    subTitle={
+                      'Sync your calendars to schedule more effectively'
+                    }
+                    url={`calendar`}
+                  />
+                </Grid>
               </Grid>
-              <Grid item xs={4} md={4}>
-                <SettingCard
-                  icon={
-                    <CalendarMonthIcon
-                      sx={{alignContent: 'center', fontSize: 70}}
-                    />
-                  }
-                  title={'Connected calendars'}
-                  subTitle={'Sync your calendars to schedule more effectively'}
-                  url={`calendar`}
-                />
-              </Grid>
-            </Grid>
-          </Card>
+            </Card>
+          </Grid>
         </Grid>
-      </Grid>
+      </Container>
     </>
   )
 }

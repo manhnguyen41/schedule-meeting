@@ -30,7 +30,7 @@ function TableHeader(props) {
             Participants
           </Typography>
         </TableCell>
-        {columns.map((column, index) => (
+        {columns?.map((column, index) => (
           <TableHeaderCell column={column} />
         ))}
       </TableRow>

@@ -8,7 +8,7 @@ function TableBodyCom(props) {
   const {rows, columns} = props
   return (
     <TableBody>
-      {rows.map((row, index) => {
+      {rows?.map((row, index) => {
         return (
           <TableRow key={index}>
             <TableCell
@@ -32,14 +32,18 @@ function TableBodyCom(props) {
                 <AccountCircleRoundedIcon sx={{color: '#acaeaf'}} />
                 <Stack direction="column" spacing={0}>
                   <Typography sx={{fontSize: 13}}>{row.name}</Typography>
-                  <Typography sx={{fontSize: 11, color: '#acaeaf'}}>
-                    You
-                  </Typography>
+                  {row?.isOrganizer ? (
+                    <Typography sx={{fontSize: 11, color: '#acaeaf'}}>
+                      You
+                    </Typography>
+                  ) : (
+                    <></>
+                  )}
                 </Stack>
               </Stack>
             </TableCell>
-            {columns.map(column => {
-              const value = row.choice[column.id]
+            {columns?.map(column => {
+              const value = row?.choice ? row?.choice[column?.id] : 'yes'
               return (
                 <TableCell
                   key={column.id}
@@ -49,7 +53,9 @@ function TableBodyCom(props) {
                   {value === 'yes' ? (
                     <Typography
                       sx={{
-                        backgroundColor: column.startTime.isBefore(dayjs()) ? '#f8f8f9' : '#e7f8ed',
+                        backgroundColor: column.startTime.isBefore(dayjs())
+                          ? '#f8f8f9'
+                          : '#e7f8ed',
                         width: '92px',
                         height: '48px',
                         mt: '4px',
@@ -59,8 +65,12 @@ function TableBodyCom(props) {
                       }}>
                       <DoneIcon
                         sx={{
-                          color: column.startTime.isBefore(dayjs()) ? '#aeaeae' : '#0d8834',
-                          backgroundColor: column.startTime.isBefore(dayjs()) ? '#f8f8f9' : '#e7f8ed',
+                          color: column.startTime.isBefore(dayjs())
+                            ? '#aeaeae'
+                            : '#0d8834',
+                          backgroundColor: column.startTime.isBefore(dayjs())
+                            ? '#f8f8f9'
+                            : '#e7f8ed',
                           mt: '10px',
                         }}
                       />
@@ -71,7 +81,9 @@ function TableBodyCom(props) {
                   {value === 'if need be' ? (
                     <Typography
                       sx={{
-                        backgroundColor: column.startTime.isBefore(dayjs()) ? '#f8f8f9' : '#fff1a8',
+                        backgroundColor: column.startTime.isBefore(dayjs())
+                          ? '#f8f8f9'
+                          : '#fff1a8',
                         width: '92px',
                         height: '48px',
                         mt: '4px',
@@ -81,8 +93,12 @@ function TableBodyCom(props) {
                       }}>
                       <DoneIcon
                         sx={{
-                          color: column.startTime.isBefore(dayjs()) ? '#aeaeae' : '#cd9949',
-                          backgroundColor: column.startTime.isBefore(dayjs()) ? '#f8f8f9' : '#fff1a8',
+                          color: column.startTime.isBefore(dayjs())
+                            ? '#aeaeae'
+                            : '#cd9949',
+                          backgroundColor: column.startTime.isBefore(dayjs())
+                            ? '#f8f8f9'
+                            : '#fff1a8',
                           mt: '10px',
                         }}
                       />
@@ -93,7 +109,9 @@ function TableBodyCom(props) {
                   {value === 'cannot attend' ? (
                     <Typography
                       sx={{
-                        backgroundColor: column.startTime.isBefore(dayjs()) ? '#f8f8f9' : '#eeeeef',
+                        backgroundColor: column.startTime.isBefore(dayjs())
+                          ? '#f8f8f9'
+                          : '#eeeeef',
                         width: '92px',
                         height: '48px',
                         mt: '4px',
@@ -104,7 +122,9 @@ function TableBodyCom(props) {
                       <ClearIcon
                         sx={{
                           color: '#aeaeae',
-                          backgroundColor: column.startTime.isBefore(dayjs()) ? '#f8f8f9' : '#eeeeef',
+                          backgroundColor: column.startTime.isBefore(dayjs())
+                            ? '#f8f8f9'
+                            : '#eeeeef',
                           mt: '10px',
                         }}
                       />

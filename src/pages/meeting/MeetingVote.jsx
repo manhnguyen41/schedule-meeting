@@ -50,20 +50,41 @@ import TableHeaderClickable from '../../components/tablechoice/TableHeaderClicka
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount'
 import ScheduleIcon from '@mui/icons-material/Schedule'
 import TableVoteHeader from '../../components/tablechoice/TableVoteHeader.jsx'
-
-function createData(name, choice) {
-  return {name, choice}
-}
-
-const rows = [
-  createData('Manh', {0: 'yes', 1: 'yes'}),
-  // createData('Manh1', {0: 'if need be', 1: 'yes'}),
-  // createData('Manh2', {0: 'cannot attend', 1: 'yes'}),
-]
+import {useNavigate, useParams} from 'react-router-dom'
+import {useDispatch, useSelector} from 'react-redux'
+import {createAxios} from '../../createInstance.js'
+import {getAllMeetings, getMeetings} from '../../redux/apiRequest/meetingApi.js'
+import {getOtherUser} from '../../redux/apiRequest/userApi.js'
+import {
+  createResponse,
+  getResponseByMeetingId,
+  updateResponse,
+} from '../../redux/apiRequest/responseApi.js'
+import TableRowVote from '../../components/tablechoice/TableRowVote.jsx'
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 
 function MeetingVote() {
   const [orderBy, setOrderBy] = useState('Date')
-  const [choice, setChoice] = useState({})
+  const [choice, setChoice] = useState([
+    {
+      responseId: 7,
+      userId: 6,
+      meetingId: 7,
+      createdAt: '2024-01-01T15:42:07.000Z',
+      modifiedAt: null,
+      deleted: 0,
+      deletedAt: null,
+      choice: {
+        0: 'yes',
+        1: 'yes',
+        2: 'yes',
+        3: 'yes',
+      },
+    },
+  ])
+  const [meeting, setMeeting] = useState()
+  const [meetings, setMeetings] = useState([])
+  const [ownerUser, setOwnerUser] = useState({})
   const [columns, setColumns] = useState([
     {
       id: 0,
@@ -78,6 +99,118 @@ function MeetingVote() {
       numOfChoice: 1,
     },
   ])
+  const [rows, setRows] = useState([
+    {name: 'Manh', choice: {0: 'yes', 1: 'yes'}},
+  ])
+  const [ownerChoice, setOwnerChoice] = useState({0: 'no', 1: 'no'})
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const currentUserId = useSelector(state => state.auth.login.currentUserId)
+  let axiosJWT = createAxios(currentUserId, dispatch, navigate)
+  const {meetingId} = useParams()
+  useEffect(async () => {
+    const meetings = await getMeetings(currentUserId?.token, dispatch, axiosJWT)
+    setMeetings(meetings)
+    const meeting = meetings?.find(meeting => meeting.meetingId == meetingId)
+    setMeeting(meeting)
+    const ownerUser = await getOtherUser(
+      currentUserId?.token,
+      axiosJWT,
+      meeting?.organizerId,
+    )
+    setOwnerUser(ownerUser)
+    const choice = await getResponseByMeetingId(
+      currentUserId?.token,
+      axiosJWT,
+      meeting?.meetingId,
+    )
+    setChoice(choice)
+  }, [])
+
+  useEffect(() => {
+    const columns = getColumns(meeting?.startTime)
+    const newColumns = [...columns]
+    newColumns?.sort(compareDate)
+    setColumns(newColumns)
+  }, [meeting, choice])
+
+  useEffect(() => {
+    getRows(choice).then(result => {
+      setRows(result)
+    })
+  }, [choice])
+
+  useEffect(() => {
+    const ownerChoice = choice.find(
+      item => item.userId == currentUserId?.userId,
+    )
+
+    setOwnerChoice(
+      ownerChoice?.choice
+        ? ownerChoice?.choice
+        : Object.fromEntries(
+            Object.keys(
+              meeting?.startTime
+                ? meeting?.startTime
+                : {
+                    0: 'yes',
+                    1: 'yes',
+                    2: 'yes',
+                    3: 'yes',
+                  },
+            ).map(key => [key, 'no']),
+          ),
+    )
+  }, [choice])
+
+  const getColumns = startTime => {
+    const result = Object.entries(
+      startTime ? startTime : {0: '2024-01-01T14:55:01.268Z'},
+    ).map(([id, startTime], index) => ({
+      id: parseInt(id),
+      startTime: dayjs(startTime),
+      endTime: dayjs(startTime).add(meeting?.duration, 'm'),
+      numOfChoice: choice.reduce(
+        (total, item) =>
+          total +
+          (item.choice[id] === 'if need be'
+            ? 0.99
+            : item.choice[id] === 'yes'
+            ? 1
+            : 0),
+        0,
+      ),
+    }))
+    return result
+  }
+
+  const createData = async (userId, choice) => {
+    const user = await getOtherUser(currentUserId?.token, axiosJWT, userId)
+    const username = user?.username
+    return {
+      name: username,
+      choice: choice,
+      isOrganizer: userId == meeting?.organizerId,
+    }
+  }
+
+  const getRows = choice => {
+    return new Promise(resolve => {
+      const filteredChoice = choice.filter(
+        item => item.userId != currentUserId?.userId,
+      )
+
+      const result = filteredChoice?.map(async item => {
+        const {userId, choice} = item
+        const transformedData = await createData(userId, choice)
+        return transformedData
+      })
+
+      Promise.all(result).then(transformedDataArray => {
+        resolve(transformedDataArray)
+      })
+    })
+  }
 
   const handleOrderSelect = (event, newOrder) => {
     if (newOrder !== null) {
@@ -92,15 +225,6 @@ function MeetingVote() {
       sortByChoice(columns)
     }
   }, [orderBy])
-
-  useEffect(() => {
-    const choice = {}
-    columns.map(column => {
-      choice[column.id] = 'No'
-    })
-    setChoice(choice)
-    sortByDate(columns)
-  }, [])
 
   const sortByDate = columns => {
     const newColumns = [...columns]
@@ -129,32 +253,31 @@ function MeetingVote() {
   }
 
   const handleChoiceChange = event => {
-    const newChoice = {...choice}
-    switch (choice[event.target.id]) {
-      case 'Yes':
-        newChoice[event.target.id] = 'If need be'
+    const newChoice = {...ownerChoice}
+    switch (ownerChoice[event.target.id]) {
+      case 'yes':
+        newChoice[event.target.id] = 'if need be'
         break
-      case 'If need be':
-        newChoice[event.target.id] = 'No'
+      case 'if need be':
+        newChoice[event.target.id] = 'no'
         break
-      case 'No':
-        newChoice[event.target.id] = 'Yes'
+      case 'no':
+        newChoice[event.target.id] = 'yes'
         break
       default:
     }
     switch (newChoice[event.target.id]) {
-      case 'Yes':
+      case 'yes':
         changeNumOfChoiceById(event.target.id, 1)
         break
-      case 'If need be':
+      case 'if need be':
         break
-      case 'No':
+      case 'no':
         changeNumOfChoiceById(event.target.id, -1)
         break
       default:
     }
-
-    setChoice(newChoice)
+    setOwnerChoice(newChoice)
   }
 
   const changeNumOfChoiceById = (id, num) => {
@@ -167,230 +290,255 @@ function MeetingVote() {
     setColumns(newColumns)
   }
 
+  const handleContinueClick = async event => {
+    const newChoice = choice.find(item => item.userId == currentUserId?.userId)
+
+    if (newChoice) {
+      const responseInfo = {
+        responseId: newChoice?.responseId,
+        choice: ownerChoice,
+      }
+      const res = await updateResponse(
+        currentUserId?.token,
+        axiosJWT,
+        navigate,
+        responseInfo,
+      )
+      console.log(res)
+    } else {
+      const responseInfo = {
+        userId: currentUserId?.userId,
+        meetingId: meeting?.meetingId,
+        choice: ownerChoice,
+      }
+      const res = await createResponse(
+        currentUserId?.token,
+        axiosJWT,
+        navigate,
+        responseInfo,
+      )
+      console.log(res)
+    }
+  }
+
   return (
     <>
       <NavBar pages={pages} value={1} />
-      <Grid
-        container
-        spacing={0}
-        sx={{mt: '100px', pl: '5%', pr: '5%', gridAutoRows: '1fr'}}>
-        <Grid item xs={3.5} md={3.5}>
+      {meeting?.status == 'scheduled' ? (
+        <Container sx={{mt: '100px', pl: '5%', pr: '5%'}}>
+          <Grid container spacing={0} sx={{gridAutoRows: '1fr'}}>
+            <Grid item xs={3.5} md={3.5}>
+              <Card variant="outlined" sx={{p: 4, height: '100%'}}>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                  sx={{mb: 1}}>
+                  <AccountCircleRoundedIcon />
+                  <Stack direction="column" spacing={0}>
+                    <Typography sx={{fontSize: 15, fontWeight: 'bold'}}>
+                      {ownerUser?.username}
+                    </Typography>
+                    <Typography sx={{fontSize: 15}}>is organizing</Typography>
+                  </Stack>
+                </Stack>
+                <Typography sx={{fontWeight: 'bold', fontSize: 20, mb: 1}}>
+                  {meeting?.title}
+                </Typography>
+                <Stack direction="row" spacing={1} sx={{mb: 1}}>
+                  <AccessTimeRoundedIcon />
+                  <Typography
+                    sx={{
+                      fontSize: 17,
+                    }}>{`${meeting?.duration} min`}</Typography>
+                </Stack>
+                <Stack direction="column-reverse" spacing={2}>
+                  <Stack direction="row" spacing={0.5}>
+                    <ScheduleIcon
+                      sx={{color: '#aeaeae', backgroundColor: '#eeeeef'}}
+                    />
+                    <Typography>Pending (yet to vote)</Typography>
+                  </Stack>
+                  <Stack direction="row" spacing={0.5}>
+                    <ClearIcon
+                      sx={{color: '#aeaeae', backgroundColor: '#eeeeef'}}
+                    />
+                    <Typography>No</Typography>
+                  </Stack>
+                  <Stack direction="row" spacing={0.5}>
+                    <DoneIcon
+                      sx={{color: '#cd9949', backgroundColor: '#fff1a8'}}
+                    />
+                    <Stack direction="column" spacing={0}>
+                      <Typography>If need be</Typography>
+                      <Typography>(2 clicks)</Typography>
+                    </Stack>
+                  </Stack>
+                  <Stack direction="row" spacing={0.5}>
+                    <DoneIcon
+                      sx={{color: '#0d8834', backgroundColor: '#e7f8ed'}}
+                    />
+                    <Typography>Yes (1 click)</Typography>
+                  </Stack>
+                </Stack>
+              </Card>
+            </Grid>
+            <Grid item xs={8.5} md={8.5}>
+              <Card variant="outlined">
+                <Typography sx={{mt: 4, ml: 4, fontSize: 30}}>
+                  Select your preferred times
+                </Typography>
+                <Typography sx={{ml: 4, fontSize: 17}}>
+                  We’ll let you know when the organizer picks the best time
+                </Typography>
+                <Divider sx={{mt: '36px'}} />
+                <TableContainer sx={{maxHeight: 440}}>
+                  <Table
+                    stickyHeader
+                    sx={{
+                      '.MuiTableCell-sizeMedium': {
+                        pt: '3px',
+                        pr: '1px',
+                        pb: '3px',
+                        pl: '16px',
+                      },
+                      '.MuiTableCell-sizeSmall': {
+                        pt: '3px',
+                        pr: '1px',
+                        pb: '3px',
+                        pl: '1px',
+                      },
+                      tableLayout: 'fixed',
+                      width: 'auto',
+                    }}>
+                    <TableVoteHeader
+                      orderBy={orderBy}
+                      handleOrderSelect={handleOrderSelect}
+                      columns={columns}
+                      choice={ownerChoice}
+                      handleChoiceChange={handleChoiceChange}
+                    />
+                    <TableBody>
+                      <TableRow key={2}>
+                        <TableCell
+                          sx={{
+                            width: '260px',
+                            minWidth: '260px',
+                            left: 0,
+                            background: 'white',
+                            size: 'medium',
+                            position: 'sticky',
+                            scope: 'row',
+                            borderBottom: 'none',
+                          }}></TableCell>
+                        {columns.map(column => (
+                          <TableCell size="small" sx={{borderBottom: 'none'}}>
+                            <Stack
+                              direction="column"
+                              sx={{alignItems: 'center'}}>
+                              <Stack
+                                direction="row"
+                                spacing={0.5}
+                                sx={{
+                                  color: column.startTime.isBefore(dayjs())
+                                    ? '#aeaeae'
+                                    : '#000000',
+                                }}>
+                                <DoneIcon sx={{fontSize: 18}} />
+                                <Typography sx={{fontSize: 14}}>
+                                  {Math.round(column.numOfChoice)}
+                                </Typography>
+                              </Stack>
+                            </Stack>
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                      {rows?.map((row, index) => (
+                        <TableRowVote
+                          row={row}
+                          index={index}
+                          columns={columns}
+                        />
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                <Divider />
+                <Toolbar sx={{mt: 2, mr: 2, mb: 2, ml: 2}}>
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      fontWeight: 'bold',
+                      color: '#666465',
+                      borderColor: '#ebebeb',
+                      textTransform: 'none',
+                    }}
+                    onClick={() => navigate(`/dashboard`)}>
+                    Decline
+                  </Button>
+                  <Typography sx={{mx: '8%'}}>
+                    Selecting more times makes it easier to find the best option
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      fontWeight: 'bold',
+                      textTransform: 'none',
+                      ml: 'auto',
+                    }}
+                    onClick={handleContinueClick}>
+                    Continue
+                  </Button>
+                </Toolbar>
+              </Card>
+            </Grid>
+          </Grid>
+        </Container>
+      ) : (
+        <Container sx={{mt: '100px', pl: '5%', pr: '5%'}}>
           <Card variant="outlined" sx={{p: 4, height: '100%'}}>
             <Stack direction="row" spacing={1} alignItems="center" sx={{mb: 1}}>
               <AccountCircleRoundedIcon />
               <Stack direction="column" spacing={0}>
                 <Typography sx={{fontSize: 15, fontWeight: 'bold'}}>
-                  Manh Nguyen
+                  {ownerUser?.username}
                 </Typography>
                 <Typography sx={{fontSize: 15}}>is organizing</Typography>
               </Stack>
             </Stack>
             <Typography sx={{fontWeight: 'bold', fontSize: 20, mb: 1}}>
-              Title
+              {meeting?.title}
             </Typography>
             <Stack direction="row" spacing={1} sx={{mb: 1}}>
               <AccessTimeRoundedIcon />
-              <Typography sx={{fontSize: 17}}>30 min</Typography>
-            </Stack>
-            <Stack
-              direction="row"
-              spacing={1}
-              sx={{mb: 2, alignContent: 'top'}}>
-              <SupervisorAccountIcon />
-              <Stack direction="column" spacing={0}>
-                <Typography sx={{fontSize: 15, fontWeight: 'bold'}}>
-                  1 of 1 invitee
-                </Typography>
-                <Typography sx={{fontSize: 15, fontWeight: 'bold'}}>
-                  responded
-                </Typography>
-              </Stack>
-            </Stack>
-            <Stack direction="column-reverse" spacing={2}>
-              <Stack direction="row" spacing={0.5}>
-                <ScheduleIcon
-                  sx={{color: '#aeaeae', backgroundColor: '#eeeeef'}}
-                />
-                <Typography>Pending (yet to vote)</Typography>
-              </Stack>
-              <Stack direction="row" spacing={0.5}>
-                <ClearIcon
-                  sx={{color: '#aeaeae', backgroundColor: '#eeeeef'}}
-                />
-                <Typography>No</Typography>
-              </Stack>
-              <Stack direction="row" spacing={0.5}>
-                <DoneIcon sx={{color: '#cd9949', backgroundColor: '#fff1a8'}} />
-                <Stack direction="column" spacing={0}>
-                  <Typography>If need be</Typography>
-                  <Typography>(2 clicks)</Typography>
-                </Stack>
-              </Stack>
-              <Stack direction="row" spacing={0.5}>
-                <DoneIcon sx={{color: '#0d8834', backgroundColor: '#e7f8ed'}} />
-                <Typography>Yes (1 click)</Typography>
-              </Stack>
-            </Stack>
-          </Card>
-        </Grid>
-        <Grid item xs={8.5} md={8.5}>
-          <Card variant="outlined">
-            <Typography sx={{mt: 4, ml: 4, fontSize: 30}}>
-              Select your preferred times
-            </Typography>
-            <Typography sx={{ml: 4, fontSize: 17}}>
-              We’ll let you know when the organizer picks the best time
-            </Typography>
-            <Divider sx={{mt: '36px'}} />
-            <TableContainer sx={{maxHeight: 440}}>
-              <Table
-                stickyHeader
+              <Typography
                 sx={{
-                  '.MuiTableCell-sizeMedium': {
-                    pt: '3px',
-                    pr: '1px',
-                    pb: '3px',
-                    pl: '16px',
-                  },
-                  '.MuiTableCell-sizeSmall': {
-                    pt: '3px',
-                    pr: '1px',
-                    pb: '3px',
-                    pl: '1px',
-                  },
-                  tableLayout: 'fixed',
-                  width: 'auto',
-                }}>
-                <TableVoteHeader
-                  orderBy={orderBy}
-                  handleOrderSelect={handleOrderSelect}
-                  columns={columns}
-                  choice={choice}
-                  handleChoiceChange={handleChoiceChange}
-                />
-                <TableBody>
-                  <TableRow key={2}>
-                    <TableCell
-                      sx={{
-                        width: '260px',
-                        minWidth: '260px',
-                        left: 0,
-                        background: 'white',
-                        size: 'medium',
-                        position: 'sticky',
-                        scope: 'row',
-                        borderBottom: 'none',
-                      }}></TableCell>
-                    {columns.map(column => (
-                      <TableCell size="small" sx={{borderBottom: 'none'}}>
-                        <Stack direction="column" sx={{alignItems: 'center'}}>
-                          <Stack direction="row" spacing={0.5}>
-                            <DoneIcon sx={{fontSize: 18}} />
-                            <Typography sx={{fontSize: 14}}>
-                              {column.numOfChoice}
-                            </Typography>
-                          </Stack>
-                        </Stack>
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                  <TableRow key={1}>
-                    <TableCell
-                      key="name"
-                      align="left"
-                      sx={{
-                        width: '260px',
-                        minWidth: '260px',
-                        left: 0,
-                        background: 'white',
-                        size: 'medium',
-                        position: 'sticky',
-                        scope: 'row',
-                      }}>
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        alignItems="center"
-                        sx={{mt: 1, mb: 1}}>
-                        <AccountCircleRoundedIcon sx={{fontSize: 40}} />
-                        <Stack direction="column" spacing={0}>
-                          <Typography sx={{fontSize: 17, fontWeight: 'bold'}}>
-                            Name
-                          </Typography>
-                          <Typography sx={{fontSize: 13}}>Organizer</Typography>
-                        </Stack>
-                      </Stack>
-                    </TableCell>
-                    {columns.map(column => (
-                      <TableCell
-                        key={column.id}
-                        align="center"
-                        sx={{width: '100px', minWidth: '100px'}}
-                        size="small">
-                        <Typography
-                          sx={{
-                            backgroundColor: column.startTime.isBefore(dayjs())
-                              ? '#f8f8f9'
-                              : '#e7f8ed',
-                            width: '92px',
-                            height: '48px',
-                            mt: '4px',
-                            mr: '5px',
-                            mb: '4px',
-                            ml: '5px',
-                          }}>
-                          <DoneIcon
-                            sx={{
-                              color: column.startTime.isBefore(dayjs())
-                                ? '#aeaeae'
-                                : '#0d8834',
-                              backgroundColor: column.startTime.isBefore(
-                                dayjs(),
-                              )
-                                ? '#f8f8f9'
-                                : '#e7f8ed',
-                              mt: '10px',
-                            }}
-                          />
-                        </Typography>
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <Divider />
-            <Stack
-              direction="row"
-              spacing={3}
-              sx={{mt: 2, mr: 3, mb: 2, ml: 4}}>
-              <Button
-                variant="outlined"
-                sx={{
-                  fontWeight: 'bold',
-                  color: '#666465',
-                  borderColor: '#ebebeb',
-                  textTransform: 'none',
-                }}
-                onClick={() => {}}>
-                Decline
-              </Button>
-              <Typography>
-                Selecting more times makes it easier to find the best option
+                  fontSize: 17,
+                }}>{`${meeting?.duration} min`}</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1} sx={{mb: 1}}>
+              <CalendarMonthIcon />
+              <Typography sx={{fontSize: 17}}>
+                {`${dayjs(meeting?.startTime).format('MMMM')} ${dayjs(
+                  meeting?.startTime,
+                ).format('D')} ${dayjs(meeting?.startTime).format(
+                  'YYYY',
+                )} • ${dayjs(meeting?.startTime).format('H')}:${dayjs(
+                  meeting?.startTime,
+                ).format('m')} ${dayjs(meeting?.startTime).format(
+                  'A',
+                )} - ${dayjs(meeting?.startTime)
+                  .add(meeting?.duration, 'm')
+                  .format('H')}:${dayjs(meeting?.startTime)
+                  .add(meeting?.duration, 'm')
+                  .format('m')} ${dayjs(meeting?.startTime)
+                  .add(meeting?.duration, 'm')
+                  .format('A')}`}
               </Typography>
-              <Button
-                variant="contained"
-                sx={{
-                  fontWeight: 'bold',
-                  textTransform: 'none',
-                }}
-                onClick={() => {}}>
-                Continue
-              </Button>
             </Stack>
           </Card>
-        </Grid>
-      </Grid>
+        </Container>
+      )}
     </>
   )
 }

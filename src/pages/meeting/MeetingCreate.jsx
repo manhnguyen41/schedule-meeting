@@ -30,11 +30,21 @@ import {DateTimePicker} from '@mui/x-date-pickers/DateTimePicker'
 import dayjs from 'dayjs'
 import ClearIcon from '@mui/icons-material/Clear'
 import AddIcon from '@mui/icons-material/Add'
-import { useNavigate } from 'react-router-dom'
+import {useNavigate, useParams} from 'react-router-dom'
+import {useDispatch, useSelector} from 'react-redux'
+import {createAxios} from '../../createInstance.js'
+import {
+  createMeeting,
+  getAllMeetings,
+  getMeetings,
+  updateMeeting,
+} from '../../redux/apiRequest/meetingApi.js'
 
-function MeetingCreate() {
+function MeetingCreate(props) {
+  const {isEdit} = props
   const [invitationFilter, setInvitationFilter] = useState('All')
   const [meeting, setMeeting] = useState('')
+  const [meetings, setMeetings] = useState([])
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [location, setLocation] = useState('')
@@ -42,8 +52,21 @@ function MeetingCreate() {
   const [isCustomDuration, setIsCustomDuration] = useState(false)
   const [durationNum, setDurationNum] = useState(60)
   const [timeType, setTimeType] = useState('minute')
-  const [times, setTimes] = useState([dayjs()])
-  const navigate = useNavigate();
+  const [times, setTimes] = useState([dayjs().add(1, 'h')])
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const currentUserId = useSelector(state => state.auth.login.currentUserId)
+  let axiosJWT = createAxios(currentUserId, dispatch, navigate)
+  const {meetingId} = useParams()
+  useEffect(async () => {
+    const meetings = await getAllMeetings(
+      currentUserId?.token,
+      dispatch,
+      axiosJWT,
+      currentUserId?.userId,
+    )
+    setMeetings(meetings)
+  }, [])
 
   useEffect(() => {
     if (timeType === 'minute') {
@@ -52,6 +75,27 @@ function MeetingCreate() {
       setDurationNum(1)
     }
   }, [timeType, isCustomDuration])
+
+  useEffect(async () => {
+    console.log(isEdit);
+    if (isEdit) {
+      const meetings = await getAllMeetings(
+        currentUserId?.token,
+        dispatch,
+        axiosJWT,
+        currentUserId?.userId,
+      )
+      setMeetings(meetings)
+      const meeting = meetings?.find(meeting => meeting.meetingId == meetingId)
+      setTitle(meeting?.title)
+      setDescription(meeting?.description)
+      setLocation(meeting?.location)
+      setDuration(`${meeting?.duration}`)
+      setTimes(
+        Object.values(meeting?.startTime ? meeting?.startTime : {"0":"2024-01-01T21: 41: 41.318Z"}).map(dateString => dayjs(dateString)),
+      )
+    }
+  }, [])
 
   const handleTitleChange = event => {
     setTitle(event.target.value)
@@ -62,7 +106,7 @@ function MeetingCreate() {
   }
 
   const handleLocationChange = event => {
-    setDescription(event.target.value)
+    setLocation(event.target.value)
   }
 
   const handleDurationChange = (event, newDuration) => {
@@ -84,6 +128,63 @@ function MeetingCreate() {
 
   const handleTimeTypeChange = event => {
     setTimeType(event.target.value)
+  }
+
+  const handleCreateClick = async event => {
+    event.preventDefault()
+    if (title == '' || times.length == 0) {
+      alert('Vui lòng điền thông tin cho title và times')
+      return
+    }
+    const newTimes = times.filter(time => time.isBefore(dayjs()))
+    if (newTimes.length != 0) {
+      alert('Vui lòng chọn thời gian bắt đầu cuộc họp muộn hơn')
+      return
+    }
+    const meetingInfo = {
+      title: title,
+      organizerId: currentUserId?.userId,
+      startTime: {...times},
+      duration: timeType == 'hour' ? durationNum * 60 : durationNum,
+      location: location,
+      description: description,
+      status: 'scheduled',
+      createdBy: currentUserId?.userId,
+    }
+    const res = await createMeeting(
+      currentUserId?.token,
+      axiosJWT,
+      navigate,
+      meetingInfo,
+    )
+  }
+
+  const handleSaveClick = async event => {
+    event.preventDefault()
+    if (title == '' || times.length == 0) {
+      alert('Vui lòng điền thông tin cho title và times')
+      return
+    }
+    const newTimes = times.filter(time => time.isBefore(dayjs()))
+    if (newTimes.length != 0) {
+      alert('Vui lòng chọn thời gian bắt đầu cuộc họp muộn hơn')
+      return
+    }
+    const meetingInfo = {
+      title: title,
+      startTime: {...times},
+      duration: timeType == 'hour' ? durationNum * 60 : durationNum,
+      location: location,
+      description: description,
+      status: 'scheduled',
+      meetingId: meetingId
+    }
+    const res = await updateMeeting(
+      currentUserId?.token,
+      axiosJWT,
+      navigate,
+      meetingInfo,
+    )
   }
 
   return (
@@ -140,7 +241,7 @@ function MeetingCreate() {
             exclusive
             onChange={handleDurationChange}
             aria-label="duration"
-            sx={{mb: '8px', mr: '55%'}}>
+            sx={{mb: '8px', mr: '60%'}}>
             <ToggleButton
               value="15"
               aria-label="15 min"
@@ -280,7 +381,7 @@ function MeetingCreate() {
             sx={{mt: '8px'}}
             onClick={() => {
               const newTimes = [...times]
-              newTimes.push(dayjs())
+              newTimes.push(dayjs().add(1, 'h'))
               setTimes(newTimes)
             }}>
             <AddIcon />
@@ -305,20 +406,58 @@ function MeetingCreate() {
               fontSize: 20,
               color: '#000000',
             }}>
-            {times.length == 1 ? `1 time selected` : `${times.length} times selected`}
+            {times.length == 1
+              ? `1 time selected`
+              : `${times.length} times selected`}
           </Typography>
-          <Button
-            variant="contained"
-            sx={{
-              m: '12px 12px 12px auto',
-              p: '10px 20px 10px 20px',
-              textTransform: 'none',
-              fontWeight: 'bold',
-              fontSize: 15,
-            }}
-            onClick={() => navigate('/meeting/organize/id')}>
-            Create and share
-          </Button>
+          {isEdit ? (
+            <Stack
+              direction="row-reverse"
+              sx={{
+                m: '12px 12px 12px auto',
+                p: '10px 20px 10px 20px',
+              }}
+              spacing={1}>
+              <Button
+                variant="contained"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: 15,
+                  textTransform: 'none',
+                  ml: 'auto',
+                }}
+                onClick={handleSaveClick}>
+                Save
+              </Button>
+              <Button
+                variant="outlined"
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: 15,
+                  color: '#666465',
+                  borderColor: '#ebebeb',
+                  textTransform: 'none',
+                }}
+                onClick={() =>
+                  navigate(`/meeting/organize/id/${meeting.meetingId}`)
+                }>
+                Cancel
+              </Button>
+            </Stack>
+          ) : (
+            <Button
+              variant="contained"
+              sx={{
+                m: '12px 12px 12px auto',
+                p: '10px 20px 10px 20px',
+                textTransform: 'none',
+                fontWeight: 'bold',
+                fontSize: 15,
+              }}
+              onClick={handleCreateClick}>
+              Create and share
+            </Button>
+          )}
         </Toolbar>
       </AppBar>
     </>

@@ -13,10 +13,23 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import {useState} from 'react'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded'
+import dayjs from 'dayjs'
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
+import {useNavigate} from 'react-router-dom'
+import {useDispatch, useSelector} from 'react-redux'
+import {createAxios} from '../createInstance'
+import {deleteMeeting, getAllMeetings, getMeetings} from '../redux/apiRequest/meetingApi'
 
 function MeetingDashBoard(props) {
+  const {meeting, handeDeleteMeeting} = props
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const currentUserId = useSelector(state => state.auth.login.currentUserId)
+  let axiosJWT = createAxios(currentUserId, dispatch, navigate)
+
   const handleClick = event => {
     setAnchorEl(event.currentTarget)
   }
@@ -24,30 +37,74 @@ function MeetingDashBoard(props) {
     setAnchorEl(null)
   }
 
+  const handleMeetingClick = event => {
+    navigate(
+      currentUserId?.userId == meeting.organizerId
+        ? `/meeting/organize/id/${meeting.meetingId}`
+        : `/meeting/organize/id/${meeting.meetingId}/vote`,
+    )
+  }
+
   return (
     <>
-      <Card sx={{margin: '20px', color: '#aeacac'}}>
-        <CardActionArea>
-          <Grid container spacing={0} sx={{margin: '30px'}} maxWidth={540}>
-            <Grid item xs={1} md={1}>
-              <Typography
-                sx={{fontWeight: 'bold', paddingTop: '5px', fontSize: 21}}>
-                01
-              </Typography>
-              <Typography sx={{fontSize: 15}}>DEC</Typography>
-            </Grid>
-            <Grid item xs={5} md={5}>
-              <Typography sx={{fontWeight: 'bold'}}>Title</Typography>
-              <Typography
-                sx={{
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                }}>
-                <DoneIcon sx={{fontSize: 17, color: '#048434', mr: '8px'}} />
-                12/1/2023 to 12/1/2023
-              </Typography>
+      <Card
+        sx={{
+          margin: '20px',
+          color: meeting?.status == 'scheduled' ? '#000000' : '#aeacac',
+        }}>
+        <Grid
+          container
+          spacing={2}
+          sx={{my: '30px', mx: '10px'}}
+          maxWidth={540}>
+          <Grid item xs={1.5} md={1.5}>
+            <CardActionArea onClick={handleMeetingClick}>
+              {meeting?.status == 'scheduled' ? (
+                <AccountCircleRoundedIcon sx={{fontSize: 40, mt: '15px'}} />
+              ) : (
+                <>
+                  <Typography
+                    sx={{fontWeight: 'bold', paddingTop: '5px', fontSize: 21}}>
+                    {dayjs(meeting.startTime).format('DD')}
+                  </Typography>
+                  <Typography sx={{fontSize: 15, textTransform: 'uppercase'}}>
+                    {dayjs(meeting.startTime).format('MMM')}
+                  </Typography>
+                </>
+              )}
+            </CardActionArea>
+          </Grid>
+          <Grid item xs={9.5} md={9.5}>
+            <CardActionArea onClick={(handleMeetingClick)}>
+              <Typography sx={{fontWeight: 'bold'}}>{meeting.title}</Typography>
+              {meeting?.status == 'scheduled' ? (
+                <Typography
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                  }}>
+                  <CalendarMonthIcon sx={{fontSize: 20, mr: '6px'}} />
+                  {`${
+                    Object.values(meeting.startTime).length
+                  } options`}
+                </Typography>
+              ) : (
+                <Typography
+                  sx={{
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                  }}>
+                  <DoneIcon sx={{fontSize: 17, color: '#048434', mr: '8px'}} />
+                  {`${dayjs(meeting.startTime).format(
+                    'MM/DD/YYYY',
+                  )} to ${dayjs(meeting.startTime)
+                    .add(meeting.duration, 'm')
+                    .format('MM/DD/YYYY')}`}
+                </Typography>
+              )}
               <Typography
                 sx={{
                   display: 'flex',
@@ -56,38 +113,42 @@ function MeetingDashBoard(props) {
                 }}>
                 <PeopleIcon sx={{fontSize: 17, mr: '8px'}} />0 invitees
               </Typography>
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <IconButton
-                type="button"
-                sx={{p: '10px', ml: '226px', mt: '13px'}}
-                aria-label="more"
-                aria-controls={open ? 'meeting-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open ? 'true' : undefined}
-                onClick={handleClick}>
-                <MoreVertIcon />
-              </IconButton>
-              <Menu
-                id="meeting-menu"
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-                MenuListProps={{
-                  'aria-labelledby': 'button',
-                }}>
-                <MenuItem onClick={handleClose}>
-                  <EditIcon sx={{mr: '10px'}} />
-                  Edit
-                </MenuItem>
-                <MenuItem onClick={handleClose} sx={{color: '#f83e19'}}>
-                  <DeleteIcon sx={{mr: '10px'}} />
-                  Delete
-                </MenuItem>
-              </Menu>
-            </Grid>
+            </CardActionArea>
           </Grid>
-        </CardActionArea>
+          <Grid item xs={1} md={1}>
+            {currentUserId?.userId == meeting.organizerId ? (
+              <>
+                <IconButton
+                  type="button"
+                  sx={{p: '10px', ml: '99%', mt: '13px'}}
+                  aria-label="more"
+                  aria-controls={open ? 'meeting-menu' : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={open ? 'true' : undefined}
+                  onClick={handleClick}>
+                  <MoreVertIcon />
+                </IconButton>
+                <Menu
+                  id="meeting-menu"
+                  anchorEl={anchorEl}
+                  open={open}
+                  onClose={handleClose}
+                  MenuListProps={{
+                    'aria-labelledby': 'button',
+                  }}>
+                  <MenuItem
+                    onClick={(event) => handeDeleteMeeting(event, meeting, handleClose)}
+                    sx={{color: '#f83e19'}}>
+                    <DeleteIcon sx={{mr: '10px'}} />
+                    Delete
+                  </MenuItem>
+                </Menu>
+              </>
+            ) : (
+              <></>
+            )}
+          </Grid>
+        </Grid>
       </Card>
     </>
   )
