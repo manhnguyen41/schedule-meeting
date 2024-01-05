@@ -1,4 +1,3 @@
-import axios from 'axios'
 import {apiURL} from '../../globalVar'
 import {
   getMeetingFailed,
@@ -154,6 +153,7 @@ export const deleteMeeting = async (
         Authorization: `Bearer ${accessToken}`,
       },
     })
+    console.log(res);
     return res.data
   } catch (error) {
     console.log(error)

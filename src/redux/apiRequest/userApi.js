@@ -1,4 +1,3 @@
-import axios from 'axios'
 import {apiURL} from '../../globalVar'
 import {
   getUserStart,
@@ -74,7 +73,7 @@ export const updateUser = async (
   }
 }
 
-export const deleteUser = async (accessToken, dispatch, axiosJWT, userId) => {
+export const deleteUser = async (accessToken, dispatch, navigate, axiosJWT, userId) => {
   dispatch(deleteUserStart())
   const body = {
     userId: userId,
@@ -86,6 +85,7 @@ export const deleteUser = async (accessToken, dispatch, axiosJWT, userId) => {
       },
     })
     dispatch(deleteUserSuccess(res.data))
+    navigate(`/login`)
     return res.data.data
   } catch (error) {
     dispatch(deleteUserFailed())

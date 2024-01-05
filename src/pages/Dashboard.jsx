@@ -1,13 +1,10 @@
-import HomeIcon from '@mui/icons-material/Home'
-import React, {Component, useEffect, useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import NavBar from '../components/NavBar.jsx'
 import {pages} from '../globalVar.js'
 import {
   Card,
   Grid,
   Typography,
-  Box,
-  InputLabel,
   MenuItem,
   FormControl,
   Select,
@@ -21,7 +18,13 @@ import SearchIcon from '@mui/icons-material/Search'
 import MeetingDashBoard from '../components/MeetingDashBoard.jsx'
 import {useNavigate} from 'react-router-dom'
 import {useDispatch, useSelector} from 'react-redux'
-import {deleteMeeting, getAllMeetings, getConfirmedMeetings, getReceivedMeetings, getSentMeetings} from '../redux/apiRequest/meetingApi.js'
+import {
+  deleteMeeting,
+  getAllMeetings,
+  getConfirmedMeetings,
+  getReceivedMeetings,
+  getSentMeetings,
+} from '../redux/apiRequest/meetingApi.js'
 import {createAxios} from '../createInstance.js'
 
 function Dashboard() {
@@ -110,16 +113,50 @@ function Dashboard() {
       meeting.meetingId,
     )
     callback()
-    const meetings = await getAllMeetings(
-      currentUserId?.token,
-      dispatch,
-      axiosJWT,
-      currentUserId?.userId,
-    )
-    setMeetings(meetings)
+    switch (invitationFilter) {
+      case 'All': {
+        const newMeetings = await getAllMeetings(
+          currentUserId?.token,
+          dispatch,
+          axiosJWT,
+          currentUserId?.userId,
+        )
+        setMeetings(newMeetings)
+        break
+      }
+      case 'Sent': {
+        const newMeetings = await getSentMeetings(
+          currentUserId?.token,
+          dispatch,
+          axiosJWT,
+          currentUserId?.userId,
+        )
+        setMeetings(newMeetings)
+        break
+      }
+      case 'Received': {
+        const newMeetings = await getReceivedMeetings(
+          currentUserId?.token,
+          dispatch,
+          axiosJWT,
+          currentUserId?.userId,
+        )
+        setMeetings(newMeetings)
+        break
+      }
+      case 'Confirmed': {
+        const newMeetings = await getConfirmedMeetings(
+          currentUserId?.token,
+          dispatch,
+          axiosJWT,
+          currentUserId?.userId,
+        )
+        setMeetings(newMeetings)
+        break
+      }
+      default:
+    }
   }
-
-  console.log(meetings);
 
   return (
     <>
@@ -191,7 +228,7 @@ function Dashboard() {
                 </Grid>
               </Grid>
               {meetings?.map(meeting => (
-                <MeetingDashBoard 
+                <MeetingDashBoard
                   meeting={meeting}
                   handeDeleteMeeting={handeDeleteMeeting}
                 />

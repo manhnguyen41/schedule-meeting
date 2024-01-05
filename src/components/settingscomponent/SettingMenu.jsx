@@ -3,7 +3,6 @@ import {
   Card,
   Typography,
   List,
-  ListItem,
   ListItemButton,
   ListItemText,
 } from '@mui/material'

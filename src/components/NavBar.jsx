@@ -6,9 +6,6 @@ import {useDispatch, useSelector} from 'react-redux'
 import {logOut} from '../redux/apiRequest/loginApi'
 import {createAxios} from '../createInstance'
 import { getUser } from '../redux/apiRequest/userApi';
-// import Popup from './Popup'
-// import {settingUser} from '../redux/apiRequest/userApi'
-// import UsersForm from '../pages/User/UsersForm'
 
 function NavBar(props) {
   const [value, setValue] = useState(props.value)
@@ -30,28 +27,6 @@ function NavBar(props) {
       navigate,
     )
   }
-
-//   const edit = async (item, resetForm) => {
-//     const resMsg = await settingUser(
-//       user?.token,
-//       dispatch,
-//       axiosJWT,
-//       item,
-//       user.returnData.UsersId,
-//       user.returnData.Email,
-//     )
-//     alert(resMsg)
-//     resetForm()
-//     setRecordForEdit(null)
-//     setOpenPopup(false)
-//     if (item.Email != user.returnData.Email) navigate('/admin/login')
-//   }
-
-//   const openInPopup = item => {
-//     // console.log(item)
-//     setRecordForEdit(item)
-//     setOpenPopup(true)
-//   }
 
   return (
     <>
@@ -103,22 +78,10 @@ function NavBar(props) {
                 onClick={() => navigate(`/login`)}>
                 Login
               </Button>
-              {/* <Button
-                sx={{marginLeft: '10px'}}
-                variant="contained"
-                onClick={() => navigate(`/register`)}>
-                Register
-              </Button> */}
             </>
           )}
         </Toolbar>
       </AppBar>
-      {/* <Popup
-        title="User form"
-        openPopup={openPopup}
-        setOpenPopup={setOpenPopup}>
-        <UsersForm recordForEdit={recordForEdit} edit={edit} />
-      </Popup> */}
     </>
   )
 }

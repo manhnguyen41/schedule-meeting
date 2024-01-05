@@ -11,7 +11,6 @@ import DoneIcon from '@mui/icons-material/Done'
 import PeopleIcon from '@mui/icons-material/People'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import {useState} from 'react'
-import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded'
 import dayjs from 'dayjs'
@@ -19,16 +18,13 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import {useNavigate} from 'react-router-dom'
 import {useDispatch, useSelector} from 'react-redux'
 import {createAxios} from '../createInstance'
-import {deleteMeeting, getAllMeetings, getMeetings} from '../redux/apiRequest/meetingApi'
 
 function MeetingDashBoard(props) {
   const {meeting, handeDeleteMeeting} = props
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
   const navigate = useNavigate()
-  const dispatch = useDispatch()
   const currentUserId = useSelector(state => state.auth.login.currentUserId)
-  let axiosJWT = createAxios(currentUserId, dispatch, navigate)
 
   const handleClick = event => {
     setAnchorEl(event.currentTarget)

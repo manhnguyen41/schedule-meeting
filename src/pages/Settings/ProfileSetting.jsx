@@ -1,37 +1,21 @@
-import HomeIcon from '@mui/icons-material/Home'
-import React, {Component, useEffect, useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import NavBar from '../../components/NavBar.jsx'
 import {pages} from '../../globalVar.js'
 import {
   Card,
   Grid,
   Typography,
-  Box,
-  InputLabel,
   MenuItem,
   FormControl,
   Select,
-  Paper,
-  InputBase,
-  IconButton,
   Button,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
   Divider,
-  TextField,
   OutlinedInput,
   Stack,
   Container,
 } from '@mui/material'
-import SearchIcon from '@mui/icons-material/Search'
-import MeetingDashBoard from '../../components/MeetingDashBoard.jsx'
-import {Link, useNavigate} from 'react-router-dom'
+import {useNavigate} from 'react-router-dom'
 import SettingMenu from '../../components/settingscomponent/SettingMenu.jsx'
-import SettingCard from '../../components/settingscomponent/SettingCard.jsx'
-import AccountBoxIcon from '@mui/icons-material/AccountBox'
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import {useDispatch, useSelector} from 'react-redux'
 import {createAxios} from '../../createInstance.js'
 import {
@@ -87,13 +71,14 @@ function ProfileSetting() {
   }
 
   const handleDeleteAccClick = async event => {
+    event.preventDefault()
     const status = await deleteUser(
       currentUserId?.token,
       dispatch,
+      navigate,
       axiosJWT,
       currentUserId?.userId,
     )
-    console.log(status)
   }
 
   return (

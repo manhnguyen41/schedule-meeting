@@ -4,7 +4,7 @@ import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded'
 import dayjs from 'dayjs'
 import ClearIcon from '@mui/icons-material/Clear'
 
-function TableBodyCom(props) {
+function TableBodyComponent(props) {
   const {rows, columns} = props
   return (
     <TableBody>
@@ -142,4 +142,4 @@ function TableBodyCom(props) {
   )
 }
 
-export default TableBodyCom
+export default TableBodyComponent

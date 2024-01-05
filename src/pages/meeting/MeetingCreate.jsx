@@ -1,23 +1,16 @@
-import HomeIcon from '@mui/icons-material/Home'
-import React, {Component, useEffect, useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import NavBar from '../../components/NavBar.jsx'
 import {pages} from '../../globalVar.js'
 import {
   Card,
-  Grid,
   Typography,
-  Box,
-  InputLabel,
   MenuItem,
   FormControl,
   Select,
-  Paper,
-  InputBase,
   IconButton,
   Button,
   Container,
   Divider,
-  TextField,
   OutlinedInput,
   ToggleButtonGroup,
   ToggleButton,
@@ -25,7 +18,6 @@ import {
   AppBar,
   Toolbar,
 } from '@mui/material'
-import SearchIcon from '@mui/icons-material/Search'
 import {DateTimePicker} from '@mui/x-date-pickers/DateTimePicker'
 import dayjs from 'dayjs'
 import ClearIcon from '@mui/icons-material/Clear'
@@ -36,15 +28,12 @@ import {createAxios} from '../../createInstance.js'
 import {
   createMeeting,
   getAllMeetings,
-  getMeetings,
   updateMeeting,
 } from '../../redux/apiRequest/meetingApi.js'
 
 function MeetingCreate(props) {
   const {isEdit} = props
-  const [invitationFilter, setInvitationFilter] = useState('All')
-  const [meeting, setMeeting] = useState('')
-  const [meetings, setMeetings] = useState([])
+  const meeting =''
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [location, setLocation] = useState('')
@@ -58,15 +47,6 @@ function MeetingCreate(props) {
   const currentUserId = useSelector(state => state.auth.login.currentUserId)
   let axiosJWT = createAxios(currentUserId, dispatch, navigate)
   const {meetingId} = useParams()
-  useEffect(async () => {
-    const meetings = await getAllMeetings(
-      currentUserId?.token,
-      dispatch,
-      axiosJWT,
-      currentUserId?.userId,
-    )
-    setMeetings(meetings)
-  }, [])
 
   useEffect(() => {
     if (timeType === 'minute') {
@@ -85,7 +65,6 @@ function MeetingCreate(props) {
         axiosJWT,
         currentUserId?.userId,
       )
-      setMeetings(meetings)
       const meeting = meetings?.find(meeting => meeting.meetingId == meetingId)
       setTitle(meeting?.title)
       setDescription(meeting?.description)
@@ -439,7 +418,7 @@ function MeetingCreate(props) {
                   textTransform: 'none',
                 }}
                 onClick={() =>
-                  navigate(`/meeting/organize/id/${meeting.meetingId}`)
+                  navigate(`/meeting/organize/id/${meetingId}`)
                 }>
                 Cancel
               </Button>

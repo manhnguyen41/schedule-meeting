@@ -7,7 +7,6 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material'
-import TableHeaderCell from './TableHeaderCell'
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded'
 import TableVoteHeaderCell from './TableVoteHeaderCell'
 

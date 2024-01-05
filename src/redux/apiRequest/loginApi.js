@@ -3,9 +3,6 @@ import {
     loginFailed,
     loginStart,
     loginSuccess,
-    registerStart,
-    registerSuccess,
-    registerFailed,
     logOutStart,
     logOutSuccess,
     logOutFailed,
@@ -25,19 +22,6 @@ export const loginUser = async (user, dispatch, navigate) => {
         alert(error)
     }
 }
-
-// export const registerUser = async (newUser, dispatch, navigate) => {
-//     dispatch(registerStart())
-//     try {
-//         const res = await axios.post(`http://localhost:8000/register`, newUser)
-//         dispatch(registerSuccess())
-//         navigate('/admin/login')
-//         alert(res.data.message)
-//     } catch (error) {
-//         dispatch(registerFailed())
-//         alert(error.response.data.error)
-//     }
-// }
 
 export const logOut = (
     dispatch,

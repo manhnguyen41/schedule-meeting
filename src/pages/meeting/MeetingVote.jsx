@@ -1,66 +1,39 @@
-import HomeIcon from '@mui/icons-material/Home'
-import React, {Component, useEffect, useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import NavBar from '../../components/NavBar.jsx'
 import {pages} from '../../globalVar.js'
 import {
   Card,
   Grid,
   Typography,
-  Box,
-  InputLabel,
-  MenuItem,
-  FormControl,
-  Select,
-  Paper,
-  InputBase,
-  IconButton,
   Button,
   Container,
   Divider,
-  TextField,
-  OutlinedInput,
-  ToggleButtonGroup,
-  ToggleButton,
   Stack,
-  AppBar,
   Toolbar,
 } from '@mui/material'
-import SearchIcon from '@mui/icons-material/Search'
-import {DateTimePicker} from '@mui/x-date-pickers/DateTimePicker'
 import dayjs from 'dayjs'
 import ClearIcon from '@mui/icons-material/Clear'
-import AddIcon from '@mui/icons-material/Add'
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded'
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
-import LanguageRoundedIcon from '@mui/icons-material/LanguageRounded'
 import DoneIcon from '@mui/icons-material/Done'
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
-import QuestionMarkIcon from '@mui/icons-material/QuestionMark'
 import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
 import TableCell from '@mui/material/TableCell'
 import TableContainer from '@mui/material/TableContainer'
-import TableHead from '@mui/material/TableHead'
-import TablePagination from '@mui/material/TablePagination'
 import TableRow from '@mui/material/TableRow'
-import PeopleIcon from '@mui/icons-material/People'
-import TableHeader from '../../components/tablechoice/TableHeader.jsx'
-import TableBodyCom from '../../components/tablechoice/TableBodyCom.jsx'
-import TableHeaderClickable from '../../components/tablechoice/TableHeaderClickable.jsx'
-import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount'
 import ScheduleIcon from '@mui/icons-material/Schedule'
-import TableVoteHeader from '../../components/tablechoice/TableVoteHeader.jsx'
+import TableVoteHeader from '../../components/tablechoice/votingmeeting/TableVoteHeader.jsx'
 import {useNavigate, useParams} from 'react-router-dom'
 import {useDispatch, useSelector} from 'react-redux'
 import {createAxios} from '../../createInstance.js'
-import {getAllMeetings, getMeetings} from '../../redux/apiRequest/meetingApi.js'
+import {getMeetings} from '../../redux/apiRequest/meetingApi.js'
 import {getOtherUser} from '../../redux/apiRequest/userApi.js'
 import {
   createResponse,
   getResponseByMeetingId,
   updateResponse,
 } from '../../redux/apiRequest/responseApi.js'
-import TableRowVote from '../../components/tablechoice/TableRowVote.jsx'
+import TableRowVote from '../../components/tablechoice/votingmeeting/TableRowVote.jsx'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 
 function MeetingVote() {
@@ -83,7 +56,6 @@ function MeetingVote() {
     },
   ])
   const [meeting, setMeeting] = useState()
-  const [meetings, setMeetings] = useState([])
   const [ownerUser, setOwnerUser] = useState({})
   const [columns, setColumns] = useState([
     {
@@ -110,7 +82,6 @@ function MeetingVote() {
   const {meetingId} = useParams()
   useEffect(async () => {
     const meetings = await getMeetings(currentUserId?.token, dispatch, axiosJWT)
-    setMeetings(meetings)
     const meeting = meetings?.find(meeting => meeting.meetingId == meetingId)
     setMeeting(meeting)
     const ownerUser = await getOtherUser(
@@ -271,9 +242,11 @@ function MeetingVote() {
         changeNumOfChoiceById(event.target.id, 1)
         break
       case 'if need be':
+        changeNumOfChoiceById(event.target.id, -1)
+        changeNumOfChoiceById(event.target.id, 0.99)
         break
       case 'no':
-        changeNumOfChoiceById(event.target.id, -1)
+        changeNumOfChoiceById(event.target.id, -0.99)
         break
       default:
     }

@@ -1,52 +1,30 @@
-import HomeIcon from '@mui/icons-material/Home'
-import React, {Component, useEffect, useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import NavBar from '../../components/NavBar.jsx'
 import {pages} from '../../globalVar.js'
 import {
   Card,
   Grid,
   Typography,
-  Box,
-  InputLabel,
-  MenuItem,
-  FormControl,
-  Select,
-  Paper,
-  InputBase,
-  IconButton,
   Button,
   Container,
   Divider,
-  TextField,
-  OutlinedInput,
-  ToggleButtonGroup,
-  ToggleButton,
   Stack,
   AppBar,
   Toolbar,
 } from '@mui/material'
-import SearchIcon from '@mui/icons-material/Search'
-import {DateTimePicker} from '@mui/x-date-pickers/DateTimePicker'
 import dayjs from 'dayjs'
 import ClearIcon from '@mui/icons-material/Clear'
-import AddIcon from '@mui/icons-material/Add'
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded'
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
 import LanguageRoundedIcon from '@mui/icons-material/LanguageRounded'
 import DoneIcon from '@mui/icons-material/Done'
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark'
 import Table from '@mui/material/Table'
-import TableBody from '@mui/material/TableBody'
-import TableCell from '@mui/material/TableCell'
 import TableContainer from '@mui/material/TableContainer'
-import TableHead from '@mui/material/TableHead'
-import TablePagination from '@mui/material/TablePagination'
-import TableRow from '@mui/material/TableRow'
 import PeopleIcon from '@mui/icons-material/People'
-import TableHeader from '../../components/tablechoice/TableHeader.jsx'
-import TableBodyCom from '../../components/tablechoice/TableBodyCom.jsx'
-import TableHeaderClickable from '../../components/tablechoice/TableHeaderClickable.jsx'
+import TableHeader from '../../components/tablechoice/defaultmeeting/TableHeader.jsx'
+import TableBodyComponent from '../../components/tablechoice/defaultmeeting/TableBodyComponent.jsx'
+import TableHeaderClickable from '../../components/tablechoice/bookingmeeting/TableHeaderClickable.jsx'
 import {useNavigate, useParams} from 'react-router-dom'
 import {useDispatch, useSelector} from 'react-redux'
 import {createAxios} from '../../createInstance.js'
@@ -54,17 +32,14 @@ import {
   confirmMeeting,
   deleteMeeting,
   getAllMeetings,
-  getMeetings,
-  updateMeeting,
 } from '../../redux/apiRequest/meetingApi.js'
 import {getResponseByMeetingId} from '../../redux/apiRequest/responseApi.js'
 import {getOtherUser} from '../../redux/apiRequest/userApi.js'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 
-function Meeting(props) {
+function Meeting() {
   const [timeChoiceId, setTimeChoiceId] = useState()
   const [meeting, setMeeting] = useState()
-  const [meetings, setMeetings] = useState([])
   const [columns, setColumns] = useState([
     {
       id: 0,
@@ -99,7 +74,6 @@ function Meeting(props) {
       },
     },
   ])
-  const [ownerChoice, setOwnerChoice] = useState({0: 'no', 1: 'no'})
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const currentUserId = useSelector(state => state.auth.login.currentUserId)
@@ -112,7 +86,6 @@ function Meeting(props) {
       axiosJWT,
       currentUserId?.userId,
     )
-    setMeetings(meetings)
     const meeting = meetings?.find(meeting => meeting.meetingId == meetingId)
     setMeeting(meeting)
     const choice = await getResponseByMeetingId(
@@ -134,29 +107,6 @@ function Meeting(props) {
     })
   }, [choice])
 
-  useEffect(() => {
-    const ownerChoice = choice.find(
-      item => item.userId == currentUserId?.userId,
-    )
-
-    setOwnerChoice(
-      ownerChoice?.choice
-        ? ownerChoice?.choice
-        : Object.fromEntries(
-            Object.keys(
-              meeting?.startTime
-                ? meeting?.startTime
-                : {
-                    0: 'yes',
-                    1: 'yes',
-                    2: 'yes',
-                    3: 'yes',
-                  },
-            ).map(key => [key, 'no']),
-          ),
-    )
-  }, [choice])
-
   const getColumns = (startTime, choice) => {
     const result = Object.entries(
       startTime ? startTime : {0: '2024-01-01T14:55:01.268Z'},
@@ -175,7 +125,6 @@ function Meeting(props) {
         0,
       ),
     }))
-    console.log(result);
     return result
   }
 
@@ -207,11 +156,12 @@ function Meeting(props) {
     setTimeChoiceId(event.target.id)
   }
 
-  const handeDeleteMeeting = async (event, meeting) => {
+  const handeDeleteMeeting = async (event) => {
+    event.preventDefault()
     const res = await deleteMeeting(
       currentUserId?.token,
       axiosJWT,
-      meeting.meetingId,
+      meeting?.meetingId,
     )
     navigate(`/dashboard`)
   }
@@ -323,9 +273,7 @@ function Meeting(props) {
                     textTransform: 'none',
                     fontSize: 15,
                   }}
-                  onClick={() => {
-                    handeDeleteMeeting
-                  }}>
+                  onClick={handeDeleteMeeting}>
                   Delete
                 </Button>
                 {rows.length == 1 ? (
@@ -447,12 +395,15 @@ function Meeting(props) {
                       handleTimeChoiceSelect={handleTimeChoiceSelect}
                     />
                   )}
-                  <TableBodyCom rows={rows} columns={columns} />
+                  <TableBodyComponent rows={rows} columns={columns} />
                 </Table>
               </TableContainer>
             </>
           ) : (
-            <Stack direction="column" spacing={1.5} sx={{mt: '8px', ml: 3, mb: 3}}>
+            <Stack
+              direction="column"
+              spacing={1.5}
+              sx={{mt: '8px', ml: 3, mb: 3}}>
               <Stack direction="row" spacing={1}>
                 <PeopleIcon sx={{color: '#acaeaf'}} />
                 <Typography

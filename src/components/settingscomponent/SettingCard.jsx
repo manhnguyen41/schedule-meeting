@@ -1,5 +1,4 @@
-import {Card, CardActionArea, Grid, Typography} from '@mui/material'
-import AccountBoxIcon from '@mui/icons-material/AccountBox'
+import {Card, CardActionArea, Typography} from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 
 
