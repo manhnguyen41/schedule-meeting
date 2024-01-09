@@ -31,7 +31,7 @@ import {createAxios} from '../../createInstance.js'
 import {
   confirmMeeting,
   deleteMeeting,
-  getAllMeetings,
+  getSentMeetings,
 } from '../../redux/apiRequest/meetingApi.js'
 import {getResponseByMeetingId} from '../../redux/apiRequest/responseApi.js'
 import {getOtherUser} from '../../redux/apiRequest/userApi.js'
@@ -80,7 +80,7 @@ function Meeting() {
   let axiosJWT = createAxios(currentUserId, dispatch, navigate)
   const {meetingId} = useParams()
   useEffect(async () => {
-    const meetings = await getAllMeetings(
+    const meetings = await getSentMeetings(
       currentUserId?.token,
       dispatch,
       axiosJWT,

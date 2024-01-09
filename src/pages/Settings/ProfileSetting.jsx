@@ -22,7 +22,7 @@ import {
   deleteUser,
   getUser,
   updateUser,
-} from '../../redux/apiRequest/userApi.js'
+} from '../../redux/apirequest/userApi.js'
 
 function ProfileSetting() {
   const [user, setUser] = useState(null)

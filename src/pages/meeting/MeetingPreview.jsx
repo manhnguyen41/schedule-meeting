@@ -27,9 +27,9 @@ import TableVoteHeader from '../../components/tablechoice/votingmeeting/TableVot
 import {useNavigate, useParams} from 'react-router-dom'
 import {useDispatch, useSelector} from 'react-redux'
 import {createAxios} from '../../createInstance.js'
-import {getMeetings} from '../../redux/apiRequest/meetingApi.js'
-import {getOtherUser} from '../../redux/apiRequest/userApi.js'
-import {getResponseByMeetingId} from '../../redux/apiRequest/responseApi.js'
+import {getSentMeetings} from '../../redux/apirequest/meetingApi.js'
+import {getOtherUser} from '../../redux/apirequest/userApi.js'
+import {getResponseByMeetingId} from '../../redux/apirequest/responseApi.js'
 import TableRowVote from '../../components/tablechoice/votingmeeting/TableRowVote.jsx'
 
 function MeetingPreview() {
@@ -77,7 +77,7 @@ function MeetingPreview() {
   let axiosJWT = createAxios(currentUserId, dispatch, navigate)
   const {meetingId} = useParams()
   useEffect(async () => {
-    const meetings = await getMeetings(currentUserId?.token, dispatch, axiosJWT)
+    const meetings = await getSentMeetings(currentUserId?.token, dispatch, axiosJWT, currentUserId?.userId)
     const meeting = meetings?.find(meeting => meeting.meetingId == meetingId)
     setMeeting(meeting)
     const ownerUser = await getOtherUser(

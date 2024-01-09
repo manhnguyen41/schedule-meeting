@@ -3,9 +3,9 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import {Link, useNavigate} from 'react-router-dom'
 import {useState, useEffect} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
-import {logOut} from '../redux/apiRequest/loginApi'
+import {logOut} from '../redux/apirequest/loginApi'
 import {createAxios} from '../createInstance'
-import { getUser } from '../redux/apiRequest/userApi';
+import { getUser } from '../redux/apirequest/userApi';
 
 function NavBar(props) {
   const [value, setValue] = useState(props.value)

@@ -27,13 +27,12 @@ import {useDispatch, useSelector} from 'react-redux'
 import {createAxios} from '../../createInstance.js'
 import {
   createMeeting,
-  getAllMeetings,
+  getSentMeetings,
   updateMeeting,
 } from '../../redux/apiRequest/meetingApi.js'
 
 function MeetingCreate(props) {
   const {isEdit} = props
-  const meeting =''
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [location, setLocation] = useState('')
@@ -59,7 +58,7 @@ function MeetingCreate(props) {
   useEffect(async () => {
     console.log(isEdit);
     if (isEdit) {
-      const meetings = await getAllMeetings(
+      const meetings = await getSentMeetings(
         currentUserId?.token,
         dispatch,
         axiosJWT,
